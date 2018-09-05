@@ -25,7 +25,7 @@ public slots:
 private:
     Ui::MainWindow *ui;
 
-    CifiServer* ifiserver;
+    CImageService* imageServer;
 };
 
 #endif // MAINWINDOW_H

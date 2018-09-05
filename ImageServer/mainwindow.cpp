@@ -11,8 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ifiserver = new CifiServer();
-    connect(ifiserver, SIGNAL(CallbackSignals(int,int,const QString&)), this, SLOT(ServerDataSlots(int, int,const QString&)));
+    imageServer = new CImageService();
 
     initial_();
 }
