@@ -1,0 +1,18 @@
+{
+	"cameras":[
+		{
+			"serialNo" : "22316383",
+			"enable" : true,
+			"autoExposure" : false,
+			"valueExposure" : 5000,
+			"maxAutoExposure" : 150000,
+			"minAutoExposure" : 5000
+		}
+	],
+	
+	"meanValue" : 20,
+	
+	"fileDirSuccess" : "F:/BaseImg/",
+	
+	"fileDir" : "F:/ImageAuto/"
+}
