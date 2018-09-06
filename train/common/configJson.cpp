@@ -37,12 +37,46 @@ void CConfigJson::Load()
             if(qObj.empty())
               return;
 
+            QJsonArray arrayFilename = qObj["config"].toArray();
+
+            foreach (QJsonValue fileNameV, arrayFilename) {
+                QJsonObject fileName = fileNameV.toObject();
+                ConfigFile fileA;
+                fileA._strName = fileName["name"].toString();
+                fileA._isEnable = fileName["enable"].toBool();
+                _listConfigFile.push_back(fileA);
+            }
+        }
+    }
+}
+
+void CConfigJson::Load(const QString& strConfigFileName)
+{
+    QString strConfig = QCoreApplication::applicationDirPath() + "/config/" + strConfigFileName;
+
+    QFile file(strConfig);
+    if(file.exists())
+    {
+        if(file.open(QFile::ReadOnly | QFile::Text))
+        {
+            QByteArray byte_array = file.readAll();
+            QJsonParseError json_error;
+            QJsonDocument parse_doucment = QJsonDocument::fromJson(byte_array, &json_error);
+            if(json_error.error != QJsonParseError::NoError){
+              return ;
+            }
+            QJsonObject qObj = parse_doucment.object();
+
+            if(qObj.empty())
+              return;
+
            _fMeanValue = qObj["meanValue"].toDouble();
             _strFileDirSuccess = qObj["fileDirSuccess"].toString();
             _strFileDir = qObj["fileDir"].toString();
 
             QJsonArray arrayCamera = qObj["cameras"].toArray();
 
+            _listCameraConfig.clear();
             foreach (QJsonValue cameraJ, arrayCamera) {
                 QJsonObject camera = cameraJ.toObject();
                 CameraConfig cameraConfig;

@@ -6,17 +6,17 @@
 #include "Camera/camera.h"
 #include <QThread>
 #include <QDateTime>
+#include "common/TCPClient.h"
 
 #include "message/qtMessagePool.h"
 #include "message/qtMessageQueue.h"
 
 class CCameraObj;
 
-
 class TrainMessageManage : public qtMessageWorkManage
 {
 public:
-    TrainMessageManage();
+    TrainMessageManage(CCameraObj* obj);
     virtual ~TrainMessageManage();
 
     virtual bool Work(qtMessage* pMsg);
@@ -24,6 +24,8 @@ public:
 protected:
     bool DoMessage(qtMessage* pMsg);
 
+public:
+    CCameraObj* m_obj;
 };
 
 class CUserDataEvent : public ImageDataEvent
@@ -65,7 +67,13 @@ public:
     void SetFrameRate(double fFrameRate);
     void SetGamma(double fGamma);
 
+signals:
+    void OpenSignals();
+    void CloseSignals();
+    void SendDataSignals(QByteArray data);
 
+public slots:
+    void ReportStatusSlots(int nCmd);
 
 public:
     Camera* _camera;
@@ -82,6 +90,8 @@ public:
     bool m_IsOpen;
     bool m_IsInit;
 
+    bool m_IsSocketConnect;
+
     cv::Mat m_CaptureImage;
 
     CUserDataEvent* pDataEvent_;
@@ -89,5 +99,7 @@ public:
     qtMessageQueue* pQueue_;
     qtMessagePool* pPool_;
     TrainMessageManage* pProcess_;
+
+    TCPClient* tcpClient_;
 };
 

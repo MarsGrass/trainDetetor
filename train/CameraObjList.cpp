@@ -29,8 +29,10 @@ CCameraObjList::~CCameraObjList()
 }
 
 
-int CCameraObjList::Init()
+int CCameraObjList::Init(const QString& strConfigName)
 {
+    _config.Load(strConfigName);
+
     g_strFileDir = _config._strFileDir;
     g_strFileDirSuccess = _config._strFileDirSuccess;
     g_fMeanValue = _config._fMeanValue;
@@ -91,6 +93,7 @@ void CCameraObjList::Uninit()
         delete cameraObj;
     }
     m_listCamera.clear();
+    g_listSerial.clear();
     return;
 }
 

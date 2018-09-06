@@ -26,7 +26,8 @@ CCameraObj::CCameraObj(QObject* parent)
     m_fFrameRate = 10;
     m_fGamma = 1;
     m_IsOpen = false;
-    m_IsInit = false;
+    m_IsInit = true;
+    m_IsSocketConnect = false;
 
     Init();
 }
@@ -37,21 +38,46 @@ CCameraObj::~CCameraObj()
     {
         CameraFactory::DestroyCamera(_camera);
         _camera = NULL;
+
+        emit CloseSignals();
     }
 }
 
 void CCameraObj::Init()
 {
-    m_IsInit = true;
+    //m_IsInit = true;
 
     pPool_ = new qtMessagePool(300);
     pQueue_ = new qtMessageQueue();
 
-    pProcess_ = new TrainMessageManage();
+    pProcess_ = new TrainMessageManage(this);
     pProcess_->Start(pQueue_, 4);
 
     pDataEvent_ = new CUserDataEvent();
     pDataEvent_->SetCameraObj(this);
+
+    m_IsSocketConnect = false;
+    if(m_IsInit)
+    {
+        tcpClient_ = new TCPClient();
+        tcpClient_->SetConfig(QString("127.0.0.1"), QString::number(8064));
+        connect(this, SIGNAL(OpenSignals()), tcpClient_, SLOT(OpenSlots()));
+        connect(this, SIGNAL(CloseSignals()), tcpClient_, SLOT(CloseSlots()));
+        connect(this, SIGNAL(SendDataSignals(QByteArray)), tcpClient_, SLOT(SendDataSlots(QByteArray)));
+        connect(tcpClient_, SIGNAL(ReportStatusSignals(int)), this, SLOT(ReportStatusSlots(int)));
+    }
+}
+
+void CCameraObj::ReportStatusSlots(int nCmd)
+{
+    if(nCmd == 0)
+    {
+        m_IsSocketConnect = false;
+    }
+    else if(nCmd == 1)
+    {
+        m_IsSocketConnect = true;
+    }
 }
 
 int CCameraObj::Create()
@@ -64,6 +90,7 @@ int CCameraObj::Create()
 
     if(m_IsInit)
     {
+        emit OpenSignals();
         //_camera->setExposure(m_fExposure);
         //_camera->setBlackLevel(m_fBlackLevel);
         //_camera->setGain(m_fGain);
@@ -76,7 +103,7 @@ int CCameraObj::Create()
         //m_fGain = _camera->getGain();
         //m_fFrameRate = _camera->getFrameRate();
         //m_fGamma = _camera->getGamma();
-        m_IsInit = true;
+        //m_IsInit = true;
     }
     //m_strInfo = _camera->getCameraInfo();
 
@@ -330,6 +357,7 @@ void CUserDataEvent::ProcessCvMat(const cv::Mat& mat)
                 if(pMessage)
                 {
                     pMessage->setSerial(m_obj->m_strSerial);
+                    pMessage->m_datatime = current_;
 
                     pMessage->m_Image = mat.clone();
                     m_obj->pQueue_->SubmitMessage(pMessage);
@@ -340,7 +368,8 @@ void CUserDataEvent::ProcessCvMat(const cv::Mat& mat)
     }
 }
 
-TrainMessageManage::TrainMessageManage()
+TrainMessageManage::TrainMessageManage(CCameraObj* obj)
+    : m_obj(obj)
 {
 
 }
@@ -359,9 +388,9 @@ bool TrainMessageManage::Work(qtMessage* pMsg)
 
     bool bRes = false;
 
-    QString path = QDateTime::currentDateTime().toString("yyyy-MM-dd-HH-mm-ss-zzz-");
+    QString path = pMsg->m_datatime.toString("yyyy-MM-dd-HH-mm-ss-zzz-");
     path += pMsg->getSerial();
-    path += ".jpg";
+    path += ".bmp";
     QString strPth;
     QString strSubDir1 = CCameraObjList::g_datetime.toString("yyyy-MM-dd-HH-mm");
     strSubDir1 = strSubDir1 + "/" + pMsg->getSerial() + "/"+ path;
@@ -383,14 +412,12 @@ bool TrainMessageManage::Work(qtMessage* pMsg)
 
     cv::imwrite(strPth.toLatin1().data(), pMsg->m_Image);
 
+    if(m_obj->m_IsSocketConnect)
+    {
+        emit m_obj->SendDataSignals(strPth.toLatin1());
+    }
     return true;
 }
-
-/**
-flag = 1 底部感应线圈  684  728
-flag = 2 底部机车标签  708
-flag = 3 速度感应器   707  726
-*/
 
 bool TrainMessageManage::DoMessage(qtMessage* pMsg)
 {

@@ -19,6 +19,9 @@ public:
     ~MainWindow();
 
 public slots:
+    void on_btnInit_clicked();
+    void on_btnUninit_clicked();
+
     void on_btnStart_clicked();
     void on_btnStop_clicked();
 

@@ -14,11 +14,19 @@ public:
         double _dMaxExposure;
         double _dMinExposure;
     };
+
+    class ConfigFile{
+    public:
+        QString _strName;
+        bool _isEnable;
+    };
 public:
      CConfigJson();
      ~CConfigJson();
 
      void Load();
+
+     void Load(const QString& strConfigFileName);
 
      bool findCameraBySerialNo(const QString& strSerialNo, CameraConfig& config);
 
@@ -27,4 +35,5 @@ public:
     QString _strFileDirSuccess;
     QString _strFileDir;
     QList<CameraConfig> _listCameraConfig;
+    QList<ConfigFile> _listConfigFile;
 };

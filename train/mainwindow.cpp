@@ -10,16 +10,23 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->btnStart->setEnabled(true);
+    ui->btnInit->setEnabled(true);
+    ui->btnUninit->setEnabled(false);
+    ui->btnStart->setEnabled(false);
     ui->btnStop->setEnabled(false);
 
     list = new CCameraObjList();
 
-    list->Init();
     m_model = new QStringListModel();
-    ui->listView->setModel(m_model);
+    ui->listView->setModel(m_model);  
 
-    m_model->setStringList(CCameraObjList::g_listSerial);
+    foreach (CConfigJson::ConfigFile file, list->_config._listConfigFile) {
+        ui->comboBox->addItem(file._strName);
+        if(file._isEnable)
+        {
+            ui->comboBox->setCurrentText(file._strName);
+        }
+    }
 }
 
 MainWindow::~MainWindow()
@@ -33,6 +40,28 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::on_btnInit_clicked()
+{
+    list->Init(ui->comboBox->currentText());
+    m_model->setStringList(CCameraObjList::g_listSerial);
+
+    ui->btnInit->setEnabled(false);
+    ui->btnUninit->setEnabled(true);
+    ui->btnStart->setEnabled(true);
+
+    ui->comboBox->setEnabled(false);
+}
+
+void MainWindow::on_btnUninit_clicked()
+{
+    list->Uninit();
+    m_model->setStringList(CCameraObjList::g_listSerial);
+    ui->btnInit->setEnabled(true);
+    ui->btnUninit->setEnabled(false);
+    ui->btnStart->setEnabled(false);
+
+    ui->comboBox->setEnabled(true);
+}
 
 void MainWindow::on_btnStart_clicked()
 {
@@ -40,8 +69,7 @@ void MainWindow::on_btnStart_clicked()
 
     ui->btnStart->setEnabled(false);
     ui->btnStop->setEnabled(true);
-
-
+    ui->btnUninit->setEnabled(false);
 }
 
 void MainWindow::on_btnStop_clicked()
@@ -50,4 +78,5 @@ void MainWindow::on_btnStop_clicked()
 
     ui->btnStart->setEnabled(true);
     ui->btnStop->setEnabled(false);
+    ui->btnUninit->setEnabled(true);
 }

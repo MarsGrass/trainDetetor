@@ -9,6 +9,8 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
 
+#include <QDateTime>
+
 class qtMessagePool;
 
 class qtMessage : public QObject
@@ -30,4 +32,5 @@ public:
     cv::Mat m_Image;
     QString m_strSerial;
     qtMessagePool* m_pMessagePool;
+    QDateTime m_datatime;
 };

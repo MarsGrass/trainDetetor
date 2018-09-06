@@ -22,7 +22,7 @@ public:
     CCameraObjList(QObject* parent = 0);
     ~CCameraObjList();
 
-    int Init();
+    int Init(const QString& strConfigName = "configName.json");
 
     void Uninit();
 
