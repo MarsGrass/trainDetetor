@@ -57,15 +57,6 @@ void IOSession::start()
     socket_.set_option(boost::asio::socket_base::keep_alive(true));
 
 
-    //handle_write(error);
-
-//    socket_.async_read_some(boost::asio::buffer(data_),
-//        make_custom_alloc_handler(allocator_,
-//        boost::bind(&session::handle_read,
-//        shared_from_this(),
-//        boost::asio::placeholders::error,
-//        boost::asio::placeholders::bytes_transferred)));
-
     m_pMessage = pServer_->pMessagePool_->GetQtMessage();
     if (m_pMessage == NULL)
     {
@@ -74,17 +65,11 @@ void IOSession::start()
     }
     m_pMessage->setSession(this);
     //请求数据包
-//    socket_.async_receive(boost::asio::buffer(pMessage->WritePosRef(), pMessageParse_->GetConstHeaderLength()),
-//        boost::bind(&IOSession::handle_read_head, this,
-//        pMessage, boost::asio::placeholders::bytes_transferred, boost::asio::placeholders::error));
-
-     recv_timeout_.expires_from_now(boost::posix_time::seconds(60));
-
      boost::asio::async_read(socket_, boost::asio::buffer(m_pMessage->WritePosRef(), pServer_->pMessageParse_->GetConstHeaderLength()),
                              boost::bind(&IOSession::handle_read_head, this,
                              boost::asio::placeholders::bytes_transferred, boost::asio::placeholders::error));
 
-     recv_timeout_.async_wait(boost::bind(&IOSession::handle_deadline, this));
+     //recv_timeout_.async_wait(boost::bind(&IOSession::handle_deadline, this));
 
 }
 
@@ -94,11 +79,8 @@ void IOSession::handle_read_head(size_t nTransSize, const boost::system::error_c
     if (!error)
     {
         m_pMessage->WritePos((int)nTransSize);
-//        socket_.async_receive(boost::asio::buffer(pMsg->WritePosRef(), pMessageParse_->GetBodyLength(pMsg)),
-//            boost::bind(&IOSession::handle_read_body, this,
-//            pMsg, boost::asio::placeholders::bytes_transferred, boost::asio::placeholders::error));
 
-        recv_timeout_.expires_from_now(boost::posix_time::seconds(60));
+        //recv_timeout_.expires_from_now(boost::posix_time::seconds(60));
 
         boost::asio::async_read(socket_, boost::asio::buffer(m_pMessage->WritePosRef(), pServer_->pMessageParse_->GetBodyLength(m_pMessage)),
                                 boost::bind(&IOSession::handle_read_body, this,
@@ -123,12 +105,7 @@ void IOSession::handle_read_body(size_t nTransSize, const boost::system::error_c
         m_pMessage->setSession(this);
 
         //请求数据包
-//        socket_.async_receive(boost::asio::buffer(pMessage->WritePosRef(), pServer_->pMessageParse_->GetConstHeaderLength()),
-//            boost::bind(&IOSession::handle_read_head, this,
-//            pMessage, boost::asio::placeholders::bytes_transferred, boost::asio::placeholders::error));
-
-        recv_timeout_.expires_from_now(boost::posix_time::seconds(60));
-
+        //recv_timeout_.expires_from_now(boost::posix_time::seconds(60));
         boost::asio::async_read(socket_, boost::asio::buffer(m_pMessage->WritePosRef(), pServer_->pMessageParse_->GetConstHeaderLength()),
                                 boost::bind(&IOSession::handle_read_head, this,
                                 boost::asio::placeholders::bytes_transferred, boost::asio::placeholders::error));

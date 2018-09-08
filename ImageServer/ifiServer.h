@@ -8,7 +8,17 @@
 #include "message/IoServer.h"
 #include "message/qtMessageWorkManage.h"
 
+#include "algorithm/platerecognition.h"
+
+#ifdef MATCH_TOOL
+#include <opencv2/dnn.hpp>
+#endif
+
 using namespace boost::asio;
+
+#ifdef MATCH_TOOL
+using namespace cv::dnn;
+#endif
 
 class ImageServiceMsgDecode : public QtMessageParse
 {
@@ -46,6 +56,16 @@ public:
 
     virtual bool Work(qtMessage* pMsg);
 
+
+    bool FindPlate(const QString& strPath, QString& strPlate);
+
+    bool matchTool(const QString& strPath, QString& strName);
+
+public:
+#ifdef MATCH_TOOL
+    dnn::Net net;
+    vector<string> classNamesVec;
+#endif
 
 };
 

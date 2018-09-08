@@ -56,9 +56,7 @@ IOSession* IOServer::GetSession()
         qDebug() << "create a new sesssion index:" << session->m_nIndex;
         return session;
     }
-    qDebug() << "sesssion pool size: " << listSession.size() << "--";
     IOSession* session = listSession.front();
-    qDebug() << session->m_nIndex;
     listSession.pop_front();
 
     return session;
@@ -66,14 +64,6 @@ IOSession* IOServer::GetSession()
 
 void IOServer::ReleaseSession(IOSession* session)
 {
-
-//        boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(), m_nPort);
-//        acceptor_.open(endpoint.protocol());
-//        acceptor_.bind(endpoint);
-//        acceptor_.listen();
-
-    qDebug() << "sesssion pool size: " << listSession.size() << "++";
-    qDebug() << session->m_nIndex;
     session->socket().close();
     listSession.push_back(session);
 }
@@ -104,7 +94,7 @@ void IOServer::handle_accept(IOSession* new_session, const boost::system::error_
         new_session->start();
         //new_session.reset(new IOSession(io_service_work_pool_.get_io_service(), io_service_pool_.get_io_service()));
         new_session = this->GetSession();
-        qDebug() << "getsession id: " << new_session->m_nIndex;
+        //qDebug() << "getsession id: " << new_session->m_nIndex;
         if(new_session)
         {
             acceptor_.async_accept(new_session->socket(),

@@ -18,8 +18,6 @@ public:
 
 
 public slots:
-    void ServerDataSlots(int nCmdId, int nSocketId, const QString& strData);
-
     void on_btnDown_clicked();
 
 private:

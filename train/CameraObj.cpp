@@ -406,15 +406,26 @@ bool TrainMessageManage::Work(qtMessage* pMsg)
         strPth = CCameraObjList::g_strFileDir + strSubDir1;
     }
 
-//    QEventLoop loop;
-//    QTimer::singleShot(500, &loop, SLOT(quit()));
-//    loop.exec();
-
     cv::imwrite(strPth.toLatin1().data(), pMsg->m_Image);
 
     if(m_obj->m_IsSocketConnect)
     {
-        emit m_obj->SendDataSignals(strPth.toLatin1());
+        int packetLength = strPth.length();
+        QString strLength = QString::number(packetLength);
+        QString strPacket;
+
+        if(strLength.length() < 8)
+        {
+            int diffLength = 8- strLength.length();
+            for(int i = 0; i < diffLength; i++)
+            {
+                strPacket.append("0");
+            }
+        }
+        strPacket.append(strLength);
+        strPacket.append(strPth);
+
+        emit m_obj->SendDataSignals(strPacket.toLatin1());
     }
     return true;
 }
